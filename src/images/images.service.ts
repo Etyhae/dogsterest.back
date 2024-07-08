@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Image } from './entities/image.entity';
 import { UpdateImageDto } from './dto/update-image.dto';
+import axios from 'axios';
 
 @Injectable()
 export class ImagesService {
@@ -15,6 +16,22 @@ export class ImagesService {
     const randomDogImage = await this.imagesRepository.find();
 
     return this.imagesRepository.save(randomDogImage);
+  }
+
+  async addDogs(): Promise<Image[]> {
+    const url = 'https://random.dog/doggos';
+
+    try {
+      const res = await axios.get(url);
+      const images: Image[] = res.data.map((image: Image) => ({
+        url: image,
+      }));
+
+      return await this.imagesRepository.save(images);
+    } catch (error) {
+      console.error('Error fetching or saving images:', error);
+      throw error;
+    }
   }
 
   async setLike(UpdateImageDto: UpdateImageDto): Promise<Image> {
